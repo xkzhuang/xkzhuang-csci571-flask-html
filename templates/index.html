@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events Search</title>
+    <style>
+     body {
+       margin: 0;
+       padding: 0;
+       font-family: Arial, sans-serif;
+       background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+       min-height: 100vh;
+       position: relative;
+       background: url('/media/background.jpg') no-repeat center center fixed;
+     }
+
+     /* Background with subtle light specks */
+     body::before {
+       content: '';
+       position: fixed;
+       top: 0;
+       left: 0;
+       width: 100%;
+       height: 100%;
+       background-image:
+         radial-gradient(circle at 20% 20%, rgba(255,255,255,0.1) 1px, transparent 1px),
+         radial-gradient(circle at 80% 80%, rgba(255,255,255,0.08) 1px, transparent 1px),
+         radial-gradient(circle at 40% 60%, rgba(255,255,255,0.06) 1px, transparent 1px);
+       background-size: 200px 200px, 300px 300px, 150px 150px;
+       pointer-events: none;
+       z-index: -1;
+     }
+
+     .container {
+       max-width: 700px;
+       margin: 50px auto;
+       background: rgba(255, 255, 255, 0.1);
+       backdrop-filter: blur(10px);
+       -webkit-backdrop-filter: blur(10px);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       border-radius: 12px;
+       padding: 30px;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+     }
+
+     .container-result {
+       width: 100%;
+       max-width: 900px;
+       min-width: 900px;
+       margin: 50px auto;
+       background: white;
+       border-radius: 0px;
+       padding: 0px;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+       display: none;
+       box-sizing: border-box;
+     }
+
+     .container-details {
+       max-width: 700px;
+       margin: 50px auto;
+       background: rgba(255, 255, 255, 0.1);
+       backdrop-filter: blur(10px);
+       -webkit-backdrop-filter: blur(10px);
+       border: 1px solid rgba(255, 255, 255, 0.2);
+       border-radius: 12px;
+       padding: 30px;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+       display: none;
+     }
+
+     .container-venue {
+       max-width: 700px;
+       margin: 50px auto;
+       background: white;
+       border-radius: 12px;
+       padding: 30px;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+       border: 1px solid #ddd;
+       display: none;
+       position: relative;
+     }
+
+     .container-venue::before {
+       content: '';
+       position: absolute;
+       top: 10px;
+       left: 10px;
+       right: 10px;
+       bottom: 10px;
+       border: 1px solid #0c0c0c;
+       border-radius: 8px;
+       pointer-events: none;
+     }
+
+     .venue-toggle {
+       text-align: center;
+       color: white;
+       font-size: 18px;
+       padding: 20px;
+     }
+
+     .venue-toggle > h1:first-child {
+       font-family: serif;
+       font-size: 28px;
+       font-weight: normal;
+       margin-bottom: 5px;
+     }
+
+     .venue-arrow {
+       font-size: 60px;
+       display: block;
+       margin: 5px auto 0;
+       color: white;
+       text-align: center;
+       cursor: pointer;
+       transition: opacity 0.2s ease;
+       transform: scaleX(2);
+     }
+
+     .venue-arrow:hover {
+       opacity: 0.7;
+     }
+
+     .venue-content {
+       display: none;
+       color: black;
+     }
+
+     .venue-header {
+       text-align: center;
+     }
+
+     .venue-name {
+       font-size: 24px;
+       font-weight: bold;
+       color: black;
+       margin-bottom: 10px;
+       text-decoration: underline;
+       font-family: sans-serif;
+     }
+
+     .venue-logo {
+       margin: 2px 0;
+     }
+
+     .venue-info {
+       display: flex;
+       align-items: flex-start;
+       gap: 20px;
+     }
+
+     .venue-address {
+       color: black;
+       line-height: 1.6;
+       font-family: sans-serif;
+       flex: 1;
+     }
+
+     .address-row {
+       display: flex;
+       align-items: flex-start;
+       gap: 20px;
+       margin-bottom: 15px;
+     }
+
+     .address-label {
+       font-weight: bold;
+       min-width: 80px;
+     }
+
+     .address-details {
+       flex: 1;
+     }
+
+     .maps-link {
+       text-align: center;
+       margin-top: 10px;
+     }
+
+     .venue-links {
+       display: flex;
+       flex-direction: column;
+       text-align: center;
+       gap: 15px;
+       flex: 1;
+     }
+
+     .venue-link {
+       color: #007bff;
+       text-decoration: none;
+       font-weight: bold;
+       font-family: sans-serif;
+       transition: color 0.2s ease;
+     }
+
+     .venue-link:hover {
+       color: #0056b3;
+     }
+
+     .venue-divider {
+       width: 1px;
+       background: #0c0c0c;
+       margin: 0 20px;
+       height: 150px;
+     }
+
+     h1 {
+       color: white;
+       text-align: center;
+       margin: 0 0 20px 0;
+       font-size: 28px;
+       font-weight: normal;
+     }
+
+     .divider {
+       height: 1px;
+       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+       margin: 0 0 25px 0;
+       border: none;
+     }
+
+     .form-grid {
+       display: grid;
+       grid-template-columns: 120px 1fr;
+       gap: 15px;
+       align-items: start;
+     }
+
+     .col-span-2 {
+       grid-column: 1 / -1;
+     }
+
+     .field {
+       display: flex;
+       flex-direction: column;
+     }
+
+     .field.distance {
+       max-width: 120px;
+     }
+
+     .field.category {
+       max-width: 350px;
+       min-width: 350px;
+       justify-self: end;
+     }
+
+     .field.location {
+       grid-column: 1 / -1;
+     }
+
+     label {
+       color: #43c1b5;
+       font-weight: 600;
+       margin-bottom: 5px;
+       font-size: 14px;
+     }
+
+     .req {
+       color: #ff6b6b;
+     }
+
+     .inline-head {
+       display: flex;
+       align-items: center;
+       gap: 10px;
+       margin-bottom: 5px;
+     }
+
+     .inline-label {
+       color: #b7bec7;
+       font-weight: 500;
+       font-size: 13px;
+       margin: 0;
+     }
+
+     input[type="text"],
+     input[type="number"],
+     select {
+       background: rgba(255, 255, 255, 0.1);
+       border: 1px solid #5a6b7a;
+       border-radius: 6px;
+       padding: 8px 12px;
+       color: white;
+       font-size: 14px;
+       outline: none;
+       transition: border-color 0.2s ease;
+     }
+
+     input[type="text"]:focus,
+     input[type="number"]:focus,
+     select:focus {
+       border-color: #7bb3ff;
+     }
+
+     input[type="checkbox"] {
+       width: auto;
+       margin: 0;
+     }
+
+     select option {
+       background: #3c3c3c;
+       color: white;
+     }
+
+     .actions {
+       display: flex;
+       gap: 15px;
+       margin-top: 20px;
+       grid-column: 1 / -1;
+     }
+
+     .btn {
+       padding: 10px 20px;
+       border: none;
+       border-radius: 6px;
+       font-weight: bold;
+       font-size: 14px;
+       cursor: pointer;
+       transition: all 0.2s ease;
+     }
+
+     .btn-search {
+       background: #ff6d00;
+       color: white;
+     }
+
+     .btn-clear {
+       background: #3f51b5;
+       color: white;
+     }
+
+     .btn:hover {
+       opacity: 0.5;
+       transform: translateY(-1px);
+     }
+
+     .muted {
+       color: #b7bec7;
+       text-align: center;
+       font-size: 18px;
+       padding: 10px;
+     }
+
+     .row-err {
+       color: #ff5252;
+     }
+
+     table {
+       width: 100%;
+       border-collapse: collapse;
+       margin: 0 auto;
+       background: white;
+       /*border-radius: 12px;*/
+       overflow: hidden;
+       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+       box-sizing: border-box;
+     }
+
+     th, td {
+       border-bottom: 1px solid #0a0a0a;
+       border-right: 1px solid #0a0a0a;
+       padding: 15px 12px;
+       text-align: center;
+     }
+
+     th:last-child, td:last-child {
+       border-right: none;
+     }
+
+     th {
+       background: #f5f5f5;
+       color: #333;
+       cursor: pointer;
+       user-select: none;
+       position: relative;
+       font-weight: 600;
+       font-size: 14px;
+     }
+
+     th:hover {
+       background: #eeeeee;
+     }
+
+     td {
+       color: #333;
+       font-size: 14px;
+     }
+
+     tr:hover {
+       background: #f9f9f9;
+     }
+
+     th.sortable::after {
+       content: '';
+     }
+
+     th.sort-asc::after {
+       content: '';
+     }
+
+     th.sort-desc::after {
+       content: '';
+     }
+
+     .event-link {
+       color: #333;
+       cursor: pointer;
+       text-decoration: none;
+       font-weight: 500;
+     }
+
+     .event-link:hover {
+       color: #c116be;
+       text-decoration: none;
+     }
+
+     .hidden-column {
+       display: none;
+     }
+
+     .key-value-pair {
+       display: flex;
+       flex-direction: column;
+       margin-bottom: 5px;
+       padding: 5px;
+       background: transparent;
+       border-radius: 6px;
+     }
+
+     .key-value-pair .key {
+       font-weight: bold;
+       color: #43c1b5;
+       margin-bottom: 5px;
+       font-size: 14px;
+     }
+
+     .key-value-pair .value {
+       color: white;
+       font-size: 14px;
+       word-wrap: break-word;
+     }
+
+     .icon-img {
+       width: 50px;
+       height: 50px;
+       object-fit: cover;
+       border-radius: 6px;
+       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+     }
+
+     @media (max-width: 768px) {
+       .form-grid {
+         grid-template-columns: 1fr;
+       }
+
+       .field.distance,
+       .field.category {
+         max-width: none;
+       }
+     }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Events Search</h1>
+      <hr class="divider" />
+      <form id="searchForm" class="form-grid">
+        <!-- Keyword (full width) -->
+        <div class="field col-span-2">
+          <label for="keyword">Keyword<span class="req">*</span></label>
+          <input id="keyword" name="keyword" type="text" required />
+        </div>
+
+        <!-- Distance (left) -->
+        <div class="field distance">
+          <label for="distance">Distance (miles)</label>
+          <input id="distance" name="distance" type="number" min="1" step="1" placeholder="10" />
+        </div>
+
+        <!-- Category (right) -->
+        <div class="field category">
+          <label for="category">Category<span class="req">*</span></label>
+          <select id="category" name="category" required>
+            <option>Default</option>
+            <option>Music</option>
+            <option>Sports</option>
+            <option value="arts">Arts & Theatre</option>
+            <option>Film</option>
+            <option>Miscellaneous</option>
+          </select>
+        </div>
+
+        <!-- Location (full width with inline Auto-Detect) -->
+        <div class="field location">
+          <div class="inline-head">
+            <label for="location">Location<span class="req">*</span></label>
+            <input id="autoDetect" type="checkbox" />
+            <label for="autoDetect" class="inline-label">Auto-Detect Location</label>
+          </div>
+          <input id="location" name="location" type="text" placeholder="City or lat,lon" required />
+        </div>
+
+        <div class="actions">
+          <button id="searchBtn" type="submit" class="btn btn-search">SEARCH</button>
+          <button id="clearBtn" type="button" class="btn btn-clear">CLEAR</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="container-result">
+      <div id="result" class="full" style="margin-top: 1rem;"></div>
+    </div>
+
+    <div class="container-details" id="eventDetails">
+      <div id="eventDetailsContent"></div>
+    </div>
+    <div id="venueIntroSection"></div>
+
+    <div class="container-venue" id="venueDetails">
+      <div id="venueDetailsContent"></div>
+    </div>
+
+    <br />
+    <br />
+
+    <script>
+     const form = document.getElementById('searchForm');
+     const result = document.getElementById('result');
+     const autoDetect = document.getElementById('autoDetect');
+     const locationInput = document.getElementById('location');
+     const clearBtn = document.getElementById('clearBtn');
+     const eventDetails = document.getElementById('eventDetails');
+     const eventDetailsContent = document.getElementById('eventDetailsContent');
+     const venueIntroSection = document.getElementById('venueIntroSection');
+     const venueDetails = document.getElementById('venueDetails');
+     const venueDetailsContent = document.getElementById('venueDetailsContent');
+
+     let currentData = [];
+     let sortColumn = null;
+     let sortDirection = 'asc';
+
+     autoDetect.addEventListener('change', async (e) => {
+       if (e.target.checked) {
+         locationInput.style.display = 'none';
+         try {
+           const res = await fetch('https://ipinfo.io/json?callback=?');
+           const text = await res.text();
+           const jsonMatch = text.match(/\{.*\}/);
+           if (jsonMatch) {
+             const data = JSON.parse(jsonMatch[0]);
+             if (data && data.city) {
+               const parts = [data.city, data.region, data.country].filter(Boolean);
+               locationInput.value = parts.join(', ');
+
+             } else if (data && data.loc) {
+               locationInput.value = data.loc; // Fallback lat,lon
+             }
+           }
+         } catch (err) {
+           alert('cannot auto-detect location');
+           autoDetect.checked = false;
+         }
+       } else {
+         locationInput.style.display = 'block';
+       }
+     });
+
+     clearBtn.addEventListener('click', () => {
+       form.reset();
+       locationInput.style.display = 'block';
+       result.innerHTML = '';
+       eventDetails.style.display = 'none';
+       venueDetails.style.display = 'none';
+       venueIntroSection.style.display = 'none';
+       document.querySelector('.container-result').style.display = 'none';
+       currentData = [];
+     });
+
+     form.addEventListener('submit', async (e) => {
+       e.preventDefault();
+       result.innerHTML = '<div class="muted">Searching…</div>';
+
+       // Hide event details, venue details, and venue intro containers when starting new search
+       eventDetails.style.display = 'none';
+       venueDetails.style.display = 'none';
+       venueIntroSection.style.display = 'none';
+
+       const params = new URLSearchParams(new FormData(form));
+       if (!params.get('distance') || params.get('distance').trim() === '') {
+         params.set('distance', '10');
+       }
+      
+       try {
+         const res = await fetch(`/search/events?${params.toString()}`);
+         const data = await res.json();
+         if (!Array.isArray(data)) {
+           document.querySelector('.container-result').style.display = 'block';
+           result.innerHTML = `<div class="row-err" style="text-align: center; font-size: 18px; padding:10px;">${data.error || 'Unexpected error'}</div>`;
+           return;
+         }
+         if (data.length === 0) {
+           document.querySelector('.container-result').style.display = 'block';
+           result.innerHTML = '<div class="row-err" style="text-align: center; font-size: 18px; padding: 10px;">No records found.</div>';
+           return;
+         }
+         currentData = data;
+         document.querySelector('.container-result').style.display = 'block';
+         renderTable(data);
+       } catch (err) {
+         document.querySelector('.container-result').style.display = 'block';
+         result.innerHTML = `<div class="row-err" style="text-align: center; font-size: 18px; padding: 10px;">Error: ${err}</div>`;
+       }
+     });
+
+     function renderTable(rows) {
+       const table = document.createElement('table');
+       table.innerHTML = `
+         <thead>
+           <tr>
+             <th class="hidden-column">ID</th>
+             <th class="sortable" data-column="dateTime">Date</th>
+             <th>Icon</th>
+             <th class="sortable" data-column="name">Event</th>
+             <th class="sortable" data-column="genre">Genre</th>
+             <th class="sortable" data-column="venue">Venue</th>
+           </tr>
+         </thead>
+         <tbody></tbody>
+       `;
+
+       // Add sorting event listeners
+       const sortableHeaders = table.querySelectorAll('.sortable');
+       sortableHeaders.forEach(header => {
+         header.addEventListener('click', () => {
+           const column = header.dataset.column;
+           if (sortColumn === column) {
+             sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+           } else {
+             sortColumn = column;
+             sortDirection = 'asc';
+           }
+
+           // Update header classes
+           sortableHeaders.forEach(h => {
+             h.classList.remove('sort-asc', 'sort-desc');
+           });
+           header.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+
+           // Sort and re-render
+           const sortedData = [...currentData].sort((a, b) => {
+             let aVal = a[column] || '';
+             let bVal = b[column] || '';
+
+             // Handle date sorting
+             if (column === 'dateTime') {
+               aVal = new Date(aVal);
+               bVal = new Date(bVal);
+             } else {
+               aVal = aVal.toString().toLowerCase();
+               bVal = bVal.toString().toLowerCase();
+             }
+
+             if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+             if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+             return 0;
+           });
+
+           renderTableBody(table.querySelector('tbody'), sortedData);
+         });
+       });
+
+       renderTableBody(table.querySelector('tbody'), rows);
+       result.innerHTML = '';
+       result.appendChild(table);
+     }
+
+     function renderTableBody(tbody, rows) {
+       tbody.innerHTML = '';
+       rows.forEach((r) => {
+         const tr = document.createElement('tr');
+         tr.innerHTML = `
+           <td class="hidden-column">${r.id || ''}</td>
+           <td>${r.dateTime || ''}</td>
+           <td>${r.icon ? `<img class="icon-img" src="${r.icon}" alt="icon" />` : ''}</td>
+            <td><span class="event-link" data-event-id="${r.id || ''}">${r.name || ''}</span></td>
+            <td>${r.genre || ''}</td>
+            <td>${r.venue || ''}</td>
+           `;
+         tbody.appendChild(tr);
+       });
+
+       // Add click event listeners to event links
+       const eventLinks = tbody.querySelectorAll('.event-link');
+       eventLinks.forEach(link => {
+         link.addEventListener('click', async (e) => {
+           e.preventDefault();
+           const eventId = link.dataset.eventId;
+           if (eventId) {
+             await fetchEventDetails(eventId);
+           }
+         });
+       });
+     }
+
+     // Helper function to extract genres from classifications
+     function extractGenres(classifications) {
+       if (!classifications || !Array.isArray(classifications)) return '';
+
+       const genreSet = new Set();
+
+       classifications.forEach(classification => {
+         // Check segment.name
+         if (classification.segment && classification.segment.name &&
+             classification.segment.name.toLowerCase() !== 'undefined') {
+           genreSet.add(classification.segment.name);
+         }
+
+         // Check genre.name
+         if (classification.genre && classification.genre.name &&
+             classification.genre.name.toLowerCase() !== 'undefined') {
+           genreSet.add(classification.genre.name);
+         }
+
+         // Check subGenre.name
+         if (classification.subGenre && classification.subGenre.name &&
+             classification.subGenre.name.toLowerCase() !== 'undefined') {
+           genreSet.add(classification.subGenre.name);
+         }
+
+         // Check type.name
+         if (classification.type && classification.type.name &&
+             classification.type.name.toLowerCase() !== 'undefined') {
+           genreSet.add(classification.type.name);
+         }
+
+         // Check subtype.name
+         if (classification.subtype && classification.subtype.name &&
+             classification.subtype.name.toLowerCase() !== 'undefined') {
+           genreSet.add(classification.subtype.name);
+         }
+       });
+
+       return Array.from(genreSet).join(' | ');
+     }
+
+     // Helper function to format date
+     function formatDate(startDate) {
+       if (!startDate) return 'N/A';
+
+       const localDate = startDate.localDate || '';
+       const localTime = startDate.localTime || '';
+
+       if (localDate && localTime) {
+         return `${localDate} ${localTime}`;
+       } else if (localDate) {
+         return localDate;
+       }
+       return 'N/A';
+     }
+
+     // Helper function to extract artist/team names
+     function extractArtists(attractions) {
+       if (!attractions || !Array.isArray(attractions)) return 'N/A';
+
+       const artistNames = attractions.map(attraction => {
+         if (attraction.name) {
+           return `<a href="${attraction.url || '#'}" target="_blank" style="color: #7bb3ff;">${attraction.name}</a>`;
+         }
+         return null;
+       }).filter(Boolean);
+
+       return artistNames.length > 0 ? artistNames.join(' | ') : 'N/A';
+     }
+
+     // Helper function to format ticket status
+     function formatTicketStatus(code) {
+       const statusMap = {
+         'onsale': { label: 'On Sale', color: '#4CAF50' },
+         'offsale': { label: 'Off Sale', color: '#f44336' },
+         'canceled': { label: 'Canceled', color: '#000000' },
+         'cancelled': { label: 'Cancelled', color: '#000000' },
+         'postponed': { label: 'Postponed', color: '#ff9800' },
+         'rescheduled': { label: 'Rescheduled', color: '#ff9800' }
+       };
+
+       const status = statusMap[code?.toLowerCase()] || { label: code || 'N/A', color: '#b7bec7' };
+
+       return `<span style="background: ${status.color}; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;">${status.label}</span>`;
+     }
+
+     // Helper function to format price ranges
+     function formatPriceRanges(priceRanges) {
+       if (!priceRanges || !Array.isArray(priceRanges) || priceRanges.length === 0) {
+         return null; // Return null to hide the field
+       }
+
+       const ranges = priceRanges.map(range => {
+         const min = range.min || 0;
+         const max = range.max || min;
+         return `${min} - ${max} USD`;
+       });
+
+       return ranges.join(', ');
+     }
+
+     async function fetchEventDetails(eventId) {
+       try {
+         eventDetailsContent.innerHTML = '<div class="muted">Loading event details...</div>';
+         eventDetails.style.display = 'block';
+
+         // Hide venue details and show venue intro section
+         venueDetails.style.display = 'none';
+         venueIntroSection.style.display = 'block';
+
+         const res = await fetch(`/search/events/${eventId}`);
+         const data = await res.json();
+
+         if (data.error) {
+           eventDetailsContent.innerHTML = `<div class="row-err">${data.error}</div>`;
+           eventDetailsContent.scrollIntoView({
+             behavior: 'smooth',
+             block: 'center'
+           });
+           return;
+         }
+
+         // Extract specific fields from the response
+         const eventName = data.name || 'Event Details';
+         const date = formatDate(data.dates?.start);
+         const artists = extractArtists(data._embedded?.attractions);
+         const venue = data._embedded?.venues?.[0]?.name || 'N/A';
+         const genres = extractGenres(data.classifications);
+         const priceRanges = formatPriceRanges(data.priceRanges);
+         const ticketStatus = data.dates?.status?.code || 'N/A';
+         const buyTicketAt = data.url ? `<a href="${data.url}" target="_blank" style="color: #7bb3ff;">Ticketmaster</a>` : 'N/A';
+         const seatMap = data.seatmap?.staticUrl || '';
+
+         // Create the layout similar to the screenshot
+         eventDetailsContent.innerHTML = `
+           <div style="color: white;">
+             <h2 style="color: white; text-align: center; margin-bottom: 30px; font-size: 24px; font-weight: normal;">${eventName}</h2>
+
+             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; align-items: start;">
+               <!-- Left Column - Event Information -->
+               <div style="display: flex; flex-direction: column;">
+                 <div class="key-value-pair">
+                   <div class="key">Date</div>
+                   <div class="value">${date}</div>
+                 </div>
+
+                 <div class="key-value-pair">
+                   <div class="key">Artist/Team</div>
+                   <div class="value">${artists}</div>
+                 </div>
+
+                 <div class="key-value-pair">
+                   <div class="key">Venue</div>
+                   <div class="value">${venue}</div>
+                 </div>
+
+                 <div class="key-value-pair">
+                   <div class="key">Genres</div>
+                   <div class="value">${genres || 'N/A'}</div>
+                 </div>
+
+                 ${priceRanges ? `
+         <div class="key-value-pair">
+         <div class="key">Price Ranges</div>
+         <div class="value">${priceRanges}</div>
+         </div>
+         ` : ''}
+
+                  <div class="key-value-pair">
+                    <div class="key">Ticket Status</div>
+                    <div class="value">${formatTicketStatus(ticketStatus)}</div>
+                  </div>
+
+                  <div class="key-value-pair">
+                    <div class="key">Buy Ticket At</div>
+                    <div class="value">${buyTicketAt}</div>
+                  </div>
+                </div>
+
+                <!-- Right Column - Seat Map -->
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                  ${seatMap ? `
+         <img src="${seatMap}" alt="Seat Map" style="max-width: 100%; height: auto; border-radius: 8px;">
+         ` : `
+         <div style="color: #b7bec7; text-align: center; padding: 40px;">
+         </div>
+         `}
+                </div>
+              </div>
+            </div>
+         `;
+
+         // Add venue toggle button
+         venueIntroSection.innerHTML = `
+           <div class="venue-toggle">
+             <h1>Show Venue Details</h1>
+             <div class="venue-arrow" onclick="toggleVenueDetails('${data._embedded?.venues?.[0]?.id || ''}')">▼</div>
+           </div>
+         `;
+       } catch (err) {
+         eventDetailsContent.innerHTML = `<div class="row-err">Error loading event details: ${err}</div>`;
+       }
+
+       eventDetailsContent.scrollIntoView({
+         behavior: 'smooth',
+         block: 'center'
+       });
+     }
+
+     function toggleVenueDetails(venueId) {
+       if (!venueId) {
+         alert('Venue ID not available');
+         return;
+       }
+
+       // Hide venue intro section and show venue details container
+       venueIntroSection.style.display = 'none';
+       venueDetails.style.display = 'block';
+
+       // Fetch venue details
+       fetchVenueDetails(venueId);
+     }
+
+     async function fetchVenueDetails(venueId) {
+       try {
+         venueDetailsContent.innerHTML = '<div class="muted">Loading venue details...</div>';
+
+         const res = await fetch(`/search/venues/${venueId}`);
+         const data = await res.json();
+
+        if (data.error) {
+          venueDetailsContent.innerHTML = `<div class="row-err">${data.error}</div>`;
+          venueIntroSection.style.display = 'block';
+          return;
+        }
+
+         // Extract venue information
+         const venueName = data.name || 'Venue Details';
+         const address = data.address?.line1 || '';
+         const city = data.city?.name || '';
+         const state = data.state?.stateCode || data.state?.name || '';
+         const postalCode = data.postalCode || '';
+         const venueLogo = data.images?.[0]?.url || '';
+
+         // Create Google Maps URL from venue name and address
+         const addressParts = [venueName, address, city, state, postalCode].filter(Boolean);
+         const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressParts.join(', '))}`;
+         const venueLink = data.url;
+
+         // Create venue details layout matching the screenshot
+         venueDetailsContent.innerHTML = `
+           <div class="venue-content">
+             <div class="venue-header">
+               <div class="venue-name">${venueName}</div>
+               ${venueLogo ? `<div class="venue-logo"><img src="${venueLogo}" alt="${venueName} Logo" style="max-width: 200px; height: auto;"></div>` : ''}
+              </div>
+
+              <div class="venue-info">
+                <div class="venue-address">
+                  <div class="address-row">
+                    <div class="address-label">Address:</div>
+                    <div class="address-details">
+                      <div>${address}</div>
+                      <div>${city}, ${state}</div>
+                      <div>${postalCode}</div>
+                    </div>
+                  </div>
+                  ${mapsUrl ? `<div class="maps-link"><a href="${mapsUrl}" target="_blank" class="venue-link">Open in Google Maps</a></div>` : ''}
+                </div>
+
+                <div class="venue-divider"></div>
+
+                <div class="venue-links">
+                  <a href="${venueLink}" target="_blank" class="venue-link">More events at this venue</a>
+                </div>
+              </div>
+            </div>
+                  `;
+
+         // Show the venue content
+         const venueContent = venueDetailsContent.querySelector('.venue-content');
+         if (venueContent) {
+           venueContent.style.display = 'block';
+         }
+
+       } catch (err) {
+         venueDetailsContent.innerHTML = `<div class="row-err">Error loading venue details: ${err}</div>`;
+         venueIntroSection.style.display = 'block';
+       }
+
+       venueDetails.scrollIntoView({
+         behavior: 'smooth',
+         block: 'center'
+       });
+     }
+    </script>
+  </body>
+</html>
