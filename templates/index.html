@@ -962,7 +962,7 @@
          // Create Google Maps URL from venue name and address
          const addressParts = [venueName, address, city, state, postalCode].filter(Boolean);
          const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addressParts.join(', '))}`;
-         const venueLink = data.url;
+         const venueLink = data.url || `https://www.ticketmaster.com/venue/${data.id}`;
 
          // Create venue details layout matching the screenshot
          venueDetailsContent.innerHTML = `
