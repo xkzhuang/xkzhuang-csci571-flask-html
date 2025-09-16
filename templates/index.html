@@ -108,18 +108,26 @@
        margin-bottom: 5px;
      }
 
-     .venue-arrow {
-       font-size: 60px;
-       display: block;
-       margin: 5px auto 0;
-       color: white;
+     .arrow-container {
+       display: flex;
+       flex-direction: column;
+       justify-content: center;
+       align-items: center;
        text-align: center;
-       cursor: pointer;
-       transition: opacity 0.2s ease;
-       transform: scaleX(2);
      }
 
-     .venue-arrow:hover {
+     .arrow {
+       width: 80px;
+       height: 80px;
+       border-left: 4px solid white;
+       border-bottom: 4px solid white;
+       transform: rotate(-45deg);
+       cursor: pointer;
+       transition: opacity 0.2s ease;
+       margin-top: -30px;
+     }
+
+     .arrow:hover {
        opacity: 0.7;
      }
 
@@ -525,6 +533,8 @@
 
     <br />
     <br />
+    <br />
+    <br />
 
     <script>
      const form = document.getElementById('searchForm');
@@ -592,7 +602,7 @@
        if (!params.get('distance') || params.get('distance').trim() === '') {
          params.set('distance', '10');
        }
-      
+
        try {
          const res = await fetch(`/search/events?${params.toString()}`);
          const data = await res.json();
@@ -899,9 +909,9 @@
 
          // Add venue toggle button
          venueIntroSection.innerHTML = `
-           <div class="venue-toggle">
+           <div class="arrow-container">
              <h1>Show Venue Details</h1>
-             <div class="venue-arrow" onclick="toggleVenueDetails('${data._embedded?.venues?.[0]?.id || ''}')">▼</div>
+             <div class="arrow" onclick="toggleVenueDetails('${data._embedded?.venues?.[0]?.id || ''}')"></div>
            </div>
          `;
        } catch (err) {
@@ -935,11 +945,11 @@
          const res = await fetch(`/search/venues/${venueId}`);
          const data = await res.json();
 
-        if (data.error) {
-          venueDetailsContent.innerHTML = `<div class="row-err">${data.error}</div>`;
-          venueIntroSection.style.display = 'block';
-          return;
-        }
+         if (data.error) {
+           venueDetailsContent.innerHTML = `<div class="row-err">${data.error}</div>`;
+           venueIntroSection.style.display = 'block';
+           return;
+         }
 
          // Extract venue information
          const venueName = data.name || 'Venue Details';
