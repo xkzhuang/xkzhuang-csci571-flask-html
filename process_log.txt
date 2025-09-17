@@ -28,6 +28,7 @@ Help me initialize a python flask project with following requirements:
        - unit: miles
        - radius: get_events "distance"
        - keyword: get_events "keyword"
+       - segmentId: get_events "category"
        - geoPoint: Google Map service converted geohash from get_events "locaton"
      - The output of the ticketmaster service will be parsed and extracted and return to UI with following fields
        - "id": response -> id
@@ -53,6 +54,7 @@ Help me initialize a python flask project with following requirements:
 
 4) This python flask proj also has "index.html" with following designs:
    - background image from "/media/background.jpg"
+   - single index.html contains scripts and stylings
    - user input form with following items:
      - required input Keyword: string
      - required input Distance(miles): positive integer, default to 10
@@ -116,6 +118,23 @@ Here we have issues:
    so I will ask AI to create a method: mapToSegmentId with mappings from the HW2 pdf
 
 
+
+=========================================================
+Prompt to fix the issues:
+=========================================================
+Please make following changes:
+ - Update blueprint search.py, and update the get_event_by_id endpoint to '/search/events/<event_id>.
+ - Extend the Google service to have getGeoHashFromLatLng in case the user input "Location" is latitude/Longitude.
+ - And we need a mapping function mapToSegmentId that should map user input "Category" to segmentId, which will be used for ticketmaster service calls. Here are the mappings ignore cases:
+    Default -> ""
+    Music -> "KZFzniwnSyZfZ7v7nJ"
+    Sports -> "KZFzniwnSyZfZ7v7nE"
+    Arts -> "KZFzniwnSyZfZ7v7na"
+    Theatre -> "KZFzniwnSyZfZ7v7na"
+    Film -> "KZFzniwnSyZfZ7v7nn"
+    Miscellaneous -> "KZFzniwnSyZfZ7v7n1"   
+   
+
 --- Entry 2 ---
 Role: Assistant
 Summary: Fixed small issues:
@@ -135,10 +154,12 @@ Summary: Created this log. Future conversation entries can be appended below wit
 
 
 
+=========================================================
+Explainations
+=========================================================
+This is exactly a perfect example of importance of getting prompt correct and accurate, because the initial draft didn't include the possibility of the "location" user input could contains lat and lng or the mappings between categories and segmentIds, the code generated was missing those important details. Hence multiple sequential iterations are needed to fine tune and perfect the project. And also the AI model I used for the initial prompt was GPT5 (mostly on the backend logic) and it was much slower than Claude 4. I switched to Claude 4 with Cursor to fix the styling in the front end, and Claude 4 generate code about 4 or 5 times faster than GPT5. Overall, after using few iterations with Vscode+gpt5, I switched to Cursor+claude 4, and I immediately loved it as Cursor+Claude4 produce much better code (quality and accuracy wise)
 
 
-
-After using few interation with Vscode+gpt5, I switched to Cursor+claude 4, and I immediately loved it as Cursor+Claude4 produce much better code (quality and accuracy wise)
 
 
 ==============================================
